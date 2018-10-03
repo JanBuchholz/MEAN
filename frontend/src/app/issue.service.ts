@@ -28,6 +28,16 @@ export class IssueService {
     return this.http.post(`${this.uri}/issues/add`, issue);
   }
 
+  addQuickIssue() {
+    const issue = {
+      title: "Neu",
+      responsible: "<Bitte eintragen>",
+      description: "<Bitte eintragen>",
+      severity: "Low"
+    };
+    return this.http.post(`${this.uri}/issues/add`, issue);
+  }
+
   updateIssue(id, title, responsible, description, severity, status) {
     const issue = {
       title: title,
@@ -36,10 +46,10 @@ export class IssueService {
       severity: severity,
       status: status
     };
-    return this.http.post(`${this.uri}/issues/update/${id}`, issue);
+    return this.http.put(`${this.uri}/issues/update/${id}`, issue);
   }
 
   deleteIssue(id) {
-    return this.http.get(`${this.uri}/issues/delete/${id}`);
+    return this.http.delete(`${this.uri}/issues/delete/${id}`);
   }
 }

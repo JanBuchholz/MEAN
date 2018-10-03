@@ -41,4 +41,10 @@ export class ListComponent implements OnInit {
     });
   }
 
+  addQuickIssue() {
+    this.issueService.addQuickIssue().subscribe(() => {
+      this.fetchIssues();
+    });
+  }
+
 }

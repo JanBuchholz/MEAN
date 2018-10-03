@@ -1,24 +1,35 @@
-import express from 'express';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import mongoose from 'mongoose';
+// ***********************************************************************
+// * Init
+// ***********************************************************************
 
-import Issue from './models/Issue';
+const express = require('express'),
+bodyParser = require('body-parser'),
+cors = require('cors'),
+mongoose = require('mongoose'),
+Issue = require('./models/Issue');
 
 const app = express();
 const router = express.Router();
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use('/', router);
 
+
+// ***********************************************************************
+// * DB Verbindung
+// ***********************************************************************
 mongoose.connect('mongodb://localhost:27017/issues');
-
 const connection = mongoose.connection;
 
 connection.once('open', () => {
     console.log('MongoDB database connection established successfully!');
 });
 
+
+// ***********************************************************************
+// * Routes
+// ***********************************************************************
 router.route('/issues').get((req, res) => {
     Issue.find((err, issues) => {
         if (err)
@@ -48,7 +59,7 @@ router.route('/issues/add').post((req, res) => {
         });
 });
 
-router.route('/issues/update/:id').post((req, res) => {
+router.route('/issues/update/:id').put((req, res) => {
     Issue.findById(req.params.id, (err, issue) => {
         if (!issue)
             return next(new Error('Could not load document'));
@@ -68,7 +79,7 @@ router.route('/issues/update/:id').post((req, res) => {
     });
 });
 
-router.route('/issues/delete/:id').get((req, res) => {
+router.route('/issues/delete/:id').delete((req, res) => {
     Issue.findByIdAndRemove({_id: req.params.id}, (err, issue) => {
         if (err)
             res.json(err);
@@ -77,6 +88,9 @@ router.route('/issues/delete/:id').get((req, res) => {
     })
 })
 
-app.use('/', router);
+
+// ***********************************************************************
+// * Server listen
+// ***********************************************************************
 
 app.listen(4000, () => console.log('Express server running on port 4000'));

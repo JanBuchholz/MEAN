@@ -2,10 +2,12 @@
   <br>
   <mat-card>
     <button mat-raised-button color="primary" routerLink="/create">Create New Issue</button>
+    <button mat-raised-button color="primary" (click)="addQuickIssue()">Quick-add Issue</button>
     <br><br>
     <mat-divider></mat-divider>
     <br>
     <table mat-table [dataSource]="issues">
+      
       <ng-container matColumnDef="title">
         <th mat-header-cell *matHeaderCellDef>Title</th>
         <td mat-cell *matCellDef="let element"> {{element.title}} </td>
