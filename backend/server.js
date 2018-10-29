@@ -3,10 +3,10 @@
 // ***********************************************************************
 
 const express = require('express'),
-bodyParser = require('body-parser'),
-cors = require('cors'),
-mongoose = require('mongoose'),
-Issue = require('./models/Issue');
+    bodyParser = require('body-parser'),
+    cors = require('cors'),
+    mongoose = require('mongoose'),
+    Issue = require('./models/Issue');
 
 const app = express();
 const router = express.Router();
@@ -14,6 +14,42 @@ const router = express.Router();
 app.use(cors());
 app.use(bodyParser.json());
 app.use('/', router);
+
+
+// ***********************************************************************
+// * Websocket - Port 4001
+// ***********************************************************************
+var http = require('http').createServer();
+http.listen(4001);
+
+var websocket = require('socket.io')(http);
+
+//Timer ... alle 5 Sekunden
+old_issues = {};
+setInterval(function () {
+
+    // Define notice
+    var notice = '';
+
+    Issue.find((err, issues) => {
+        if (err)
+            console.log(err);
+        else {
+
+            if (JSON.stringify(issues) !== JSON.stringify(old_issues)) {
+                //Date
+                var d = new Date();
+                var n = d.toString();
+                console.log(n + ' : Data change detected. Sending notice ....');
+                
+                //Schreib objekt ins lokale und schicke notice
+                old_issues = issues;
+                notice = 'check';
+                websocket.emit('change', notice);
+            }
+        }
+    });
+}, 5000);
 
 
 // ***********************************************************************
@@ -25,6 +61,7 @@ const connection = mongoose.connection;
 connection.once('open', () => {
     console.log('MongoDB database connection established successfully!');
 });
+
 
 
 // ***********************************************************************
@@ -52,7 +89,7 @@ router.route('/issues/add').post((req, res) => {
     let issue = new Issue(req.body);
     issue.save()
         .then(issue => {
-            res.status(200).json({'issue': 'Added successfully'});
+            res.status(200).json({ 'issue': 'Added successfully' });
         })
         .catch(err => {
             res.status(400).send('Failed to create new record');
@@ -80,7 +117,7 @@ router.route('/issues/update/:id').put((req, res) => {
 });
 
 router.route('/issues/delete/:id').delete((req, res) => {
-    Issue.findByIdAndRemove({_id: req.params.id}, (err, issue) => {
+    Issue.findByIdAndRemove({ _id: req.params.id }, (err, issue) => {
         if (err)
             res.json(err);
         else
@@ -89,8 +126,10 @@ router.route('/issues/delete/:id').delete((req, res) => {
 })
 
 
+
+
 // ***********************************************************************
 // * Server listen
 // ***********************************************************************
 
-app.listen(4000, () => console.log('Express server running on port 4000'));
+app.listen(4000, () => console.log('Server running on port 4000'));

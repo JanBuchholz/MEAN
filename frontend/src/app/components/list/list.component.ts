@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatTableDataSource } from '@angular/material';
+
+import * as io from 'socket.io-client';
 
 import { Issue } from '../../issue.model';
 import { IssueService } from '../../issue.service';
@@ -15,7 +16,20 @@ export class ListComponent implements OnInit {
   issues: Issue[];
   displayedColumns = ['title', 'responsible', 'severity', 'status', 'actions'];
 
-  constructor(private issueService: IssueService, private router: Router) { }
+  notice = '';
+
+  constructor(private issueService: IssueService, private router: Router) {
+
+    // Websocket erzeugen
+    const socket = io('http://localhost:4001');
+    socket.on('change', (data) => {
+
+      if (data == 'check') {        
+        console.log('Detected data change. Reloading ...');
+        this.fetchIssues();
+      }
+    });
+  }
 
   ngOnInit() {
     this.fetchIssues();
@@ -26,8 +40,7 @@ export class ListComponent implements OnInit {
       .getIssues()
       .subscribe((data: Issue[]) => {
         this.issues = data;
-        console.log('Data requested ...');
-        console.log(this.issues);
+        this.notice = '';
       });
   }
 
